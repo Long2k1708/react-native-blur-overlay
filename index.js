@@ -3,13 +3,13 @@ import {
   Platform,
   requireNativeComponent,
   StyleSheet,
-  TouchableWithoutFeedback,
   Animated
 } from 'react-native';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types'
+import Emitter from 'tiny-emitter/instance';
 
-var nativeComponentProps = {
+let nativeComponentProps = {
   name: 'BlurView',
   propTypes: {
     ...View.propTypes,
@@ -21,7 +21,7 @@ var nativeComponentProps = {
   }
 };
 
-var RCTSajjadBlurOverlay = Platform.select({
+let SajjadBlurOverlay = Platform.select({
   ios: () => requireNativeComponent('SajjadBlurOverlay', nativeComponentProps),
   android: () => requireNativeComponent('RCTSajjadBlurOverlay', nativeComponentProps),
 })();
@@ -36,32 +36,31 @@ export default class BlurOverlay extends Component {
   }
 
   componentDidMount() {
-    const { openOverlay = false } = this.props;
-    if (openOverlay)
-      this._openOverlay();
-    else
-      this._closeOverlay();
+    Emitter.on('drawer-open', this.openOverlay);
+    Emitter.on('drawer-close', this.closeOverlay);
+  }
+
+  componentWillUnmount() {
+    Emitter.off('drawer-open', this.openOverlay);
+    Emitter.off('drawer-close', this.closeOverlay);
   }
 
   render() {
     const { children } = this.props;
-    const { showBlurOverlay } = this.state;
     return (
-      showBlurOverlay
-        ? <Animated.View style={[{ opacity: this.state.fadeIn }, styles.style]}>
-          <TouchableWithoutFeedback style={styles.style} onPress={this.props.onPress}>
-            <RCTSajjadBlurOverlay {...this.props} style={[this.props.customStyles, styles.style]}>
-              <View style={[this.props.customStyles, styles.style]}>
-                {children}
-              </View>
-            </RCTSajjadBlurOverlay>
-          </TouchableWithoutFeedback>
-        </Animated.View>
-        : null
+      this.state.showBlurOverlay ?
+        <Animated.View style={[{ opacity: this.state.fadeIn }, styles.style]}>
+          <SajjadBlurOverlay {...this.props} style={[this.props.customStyles, styles.style]}>
+            <View style={[this.props.customStyles, styles.style]}>
+              {children}
+            </View>
+          </SajjadBlurOverlay>
+        </Animated.View> :
+        null
     );
   }
 
-  _openOverlay() {
+  openOverlay = () => {
     const { blurringDuration = 500 } = this.props;
     this.setState({
       showBlurOverlay: true,
@@ -78,7 +77,7 @@ export default class BlurOverlay extends Component {
     })
   }
 
-  _closeOverlay() {
+  closeOverlay = () => {
     const { blurringDuration = 500 } = this.props;
     Animated.timing(
       this.state.fadeIn,
@@ -99,9 +98,16 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    //  resizeMode: 'cover',
     width: null,
     height: null,
     zIndex: 999,
   },
 });
+
+export function openOverlay() {
+  Emitter.emit('drawer-open');
+}
+
+export function closeOverlay() {
+  Emitter.emit('drawer-close');
+}

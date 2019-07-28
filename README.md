@@ -127,9 +127,7 @@ const styles = StyleSheet.create({
 });
 
 ```
-  
-  
-  
+
 ## Props
 ```
 android only:
@@ -141,7 +139,14 @@ ios only :
   blurStyle: string ("light" , "extraLight" , "dark")
 	
 both platforms :
+  customStyles: style for child view component
+```
 
-  onPress : func
-  customStyles: style	  
+## Controller
+Usage: `import BlurOverlayController from 'react-native-blur-overlay/controller'`
+
+Function:
+```
+toggleBlurOverlay(): Open or close blur overlay
+setOpenState(openState): Set open state of blur overlay (true: open. false: close);
 ```
