@@ -14,7 +14,6 @@ function toggleBlurOverlay() {
 
 function setOpenState(openState) {
   isOpen = openState;
-  openState ? openOverlay() : closeOverlay();
 }
 
 export default {
